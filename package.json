@@ -8,12 +8,12 @@
     "openswarm": "dist/cli.js"
   },
   "scripts": {
-    "predev": "pkill -f 'tsx src/index.ts' 2>/dev/null || true",
+    "predev": "pkill -TERM -f 'node --env-file=.env .*src/index.ts' 2>/dev/null || true",
     "dev": "node --env-file=.env --import=tsx src/index.ts",
-    "prestart": "pkill -f 'dist/index.js' 2>/dev/null || true",
+    "prestart": "pkill -TERM -f 'node --env-file=.env .*dist/index.js' 2>/dev/null || true",
     "build": "tsc",
     "start": "node --env-file=.env dist/index.js",
-    "stop": "pkill -f 'node --env-file=.env.*openswarm' 2>/dev/null || echo 'No process running'",
+    "stop": "sh -c 'killed=0; pkill -TERM -f \"node --env-file=.env .*src/index.ts\" && killed=1; pkill -TERM -f \"node --env-file=.env .*dist/index.js\" && killed=1; [ \"$killed\" -eq 1 ] || echo \"No process running\"'",
     "lint": "oxlint src/",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run",

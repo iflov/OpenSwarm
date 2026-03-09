@@ -26,7 +26,8 @@ export class CodexCliAdapter implements CliAdapter {
   readonly name = 'codex';
 
   readonly capabilities: AdapterCapabilities = {
-    supportsStreaming: true,
+    // Disable live streaming until Codex JSONL has a dedicated parser.
+    supportsStreaming: false,
     supportsJsonOutput: true,
     supportsModelSelection: true,
     managedGit: false,
@@ -45,7 +46,7 @@ export class CodexCliAdapter implements CliAdapter {
   buildCommand(options: CliRunOptions): { command: string; args: string[] } {
     const promptFile = options.prompt;
     const modelFlag = options.model ? ` -m ${options.model}` : '';
-    const cmd = `CLAUDECODE= codex exec --json --full-auto${modelFlag} "$(cat ${promptFile})"`;
+    const cmd = `CLAUDECODE= codex exec --json --full-auto${modelFlag} - < "${promptFile}"`;
     return { command: cmd, args: [] };
   }
 
@@ -129,10 +130,7 @@ function extractCodexResult(stdout: string): string | null {
         if (outputs) lastMessage = outputs;
       }
     } catch {
-      // Not JSON, accumulate as plain text
-      if (trimmed.length > 10) {
-        lastMessage += trimmed + '\n';
-      }
+      // Ignore non-JSON lines in --json mode. Fallback text parsing will inspect raw stdout.
     }
   }
 
@@ -232,7 +230,7 @@ function extractWorkerFromText(text: string): WorkerResult {
   }
 
   return {
-    success: !hasError || hasSuccess,
+    success: hasSuccess && !hasError,
     summary: extractSummary(text),
     filesChanged: filesChanged.slice(0, 10),
     commands: commands.slice(0, 10),

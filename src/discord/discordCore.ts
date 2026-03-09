@@ -17,9 +17,10 @@ import {
 import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import type { SwarmEvent, AgentStatus } from '../core/types.js';
-import { extractCostFromJson, formatCost } from '../support/costTracker.js';
+import { extractCostFromStreamJson, formatCost } from '../support/costTracker.js';
 import * as memory from '../memory/index.js';
 import { t, getPrompts, getDateLocale } from '../locale/index.js';
+import { parseClaudeStreamOutput } from './claudeOutput.js';
 
 // Handler module (for routing)
 import { handlePair } from './discordPair.js';
@@ -724,7 +725,7 @@ async function runClaude(
     console.log(`[Claude CLI] Starting in ${workingDir}...`);
     const proc = spawn('claude', [
       '-p', prompt,
-      '--output-format', 'json',
+      '--output-format', 'stream-json',
       '--permission-mode', 'bypassPermissions',
     ], {
       shell: false,
@@ -748,7 +749,11 @@ async function runClaude(
         reject(new Error(`Claude CLI failed with code ${code}`));
         return;
       }
-      resolve(parseClaudeJson(stdout));
+      const costInfo = extractCostFromStreamJson(stdout);
+      if (costInfo) {
+        console.log(`[Discord] Claude cost: ${formatCost(costInfo)}`);
+      }
+      resolve(parseClaudeStreamOutput(stdout));
     });
 
     proc.on('error', (err) => {
@@ -756,72 +761,6 @@ async function runClaude(
       reject(new Error(`Claude CLI spawn error: ${err.message}`));
     });
   });
-}
-
-// Destructive command patterns
-const DESTRUCTIVE_PATTERNS = [
-  /\brm\s+(-[rf]+\s+)*.*(-[rf]+|--recursive|--force)/i,
-  /\bgit\s+(reset\s+--hard|clean\s+-[fd])/i,
-  /\b(drop|truncate)\s+(database|table)/i,
-  /\bchmod\s+777/i,
-  /\bdd\s+if=/i,
-  />\s*\/dev\/sd[a-z]/i,
-];
-
-/**
- * Parse Claude JSON output
- */
-function parseClaudeJson(output: string): { result: string; toolCalls: string[] } {
-  const toolCalls: string[] = [];
-
-  // Extract cost
-  const costInfo = extractCostFromJson(output);
-  if (costInfo) {
-    console.log(`[Discord] Claude cost: ${formatCost(costInfo)}`);
-  }
-
-  try {
-    const match = output.match(/\[[\s\S]*\]/);
-    if (!match) return { result: output.trim() || t('common.fallback.noResponse'), toolCalls };
-
-    const arr = JSON.parse(match[0]);
-    let result = t('common.fallback.noResponse');
-
-    for (const item of arr) {
-      if (item.type === 'tool_use') {
-        const toolName = item.name || 'unknown';
-        let toolSummary = toolName;
-
-        if (toolName === 'Bash' && item.input?.command) {
-          const cmd = item.input.command.slice(0, 80);
-          toolSummary = `Bash: \`${cmd}${item.input.command.length > 80 ? '...' : ''}\``;
-
-          for (const pattern of DESTRUCTIVE_PATTERNS) {
-            if (pattern.test(item.input.command)) {
-              toolSummary = `⛔ BLOCKED: ${cmd}`;
-              console.warn(`[OpenSwarm] Destructive command detected: ${item.input.command}`);
-              break;
-            }
-          }
-        } else if (['Read', 'Write', 'Edit'].includes(toolName) && item.input?.file_path) {
-          const path = item.input.file_path.split('/').slice(-2).join('/');
-          toolSummary = `${toolName}: \`${path}\``;
-        } else if (toolName === 'Grep' && item.input?.pattern) {
-          toolSummary = `Grep: \`${item.input.pattern}\``;
-        }
-
-        toolCalls.push(toolSummary);
-      }
-
-      if (item.type === 'result' && item.result) {
-        result = item.result;
-      }
-    }
-
-    return { result, toolCalls };
-  } catch {
-    return { result: output.trim() || t('common.fallback.noResponse'), toolCalls };
-  }
 }
 
 /**
@@ -890,4 +829,3 @@ export async function getChatHistory(): Promise<ChatEntry[]> {
     return [];
   }
 }
-
