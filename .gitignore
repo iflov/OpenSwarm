@@ -54,3 +54,7 @@ openclaw/
 # Claude
 .claude
 .omc
+.serena
+
+# Codex
+.omx
