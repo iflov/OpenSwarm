@@ -1,33 +1,112 @@
 {
-  "discordToken": "YOUR_DISCORD_BOT_TOKEN",
-  "discordChannelId": "YOUR_DISCORD_CHANNEL_ID",
-  "linearApiKey": "YOUR_LINEAR_API_KEY",
-  "linearTeamId": "YOUR_LINEAR_TEAM_ID",
-  "defaultHeartbeatInterval": 1800000,
+  "language": "ko",
+  "timeWindow": {
+    "enabled": false
+  },
+  "discord": {
+    "token": "${DISCORD_TOKEN}",
+    "channelId": "${DISCORD_CHANNEL_ID}",
+    "webhookUrl": "${DISCORD_WEBHOOK_URL:-}"
+  },
+  "linear": {
+    "apiKey": "${LINEAR_API_KEY}",
+    "teamId": "${LINEAR_TEAM_ID}"
+  },
+  "github": {
+    "repos": [
+      "your-org/OpenSwarm"
+    ],
+    "checkInterval": 300000
+  },
+  "projects": {
+    "basePaths": [
+      "${PROJECT_BASE:-~/Desktop}"
+    ],
+    "knownRepos": {
+      "OpenSwarm": "${PROJECT_BASE:-~/Desktop}/OpenSwarm",
+      "another-project": "${PROJECT_BASE:-~/Desktop}/another-project"
+    },
+    "issuePrefixMap": {
+      "INT": "OpenSwarm"
+    }
+  },
   "agents": [
     {
-      "name": "openclaw",
-      "projectPath": "/home/unohee/dev/openclaw",
+      "name": "main",
+      "projectPath": "${PROJECT_PATH:-~/Desktop/OpenSwarm}",
       "heartbeatInterval": 1800000,
-      "linearLabel": "openclaw",
+      "linearLabel": "main",
       "enabled": true,
       "paused": false
     },
     {
-      "name": "pykis",
-      "projectPath": "/home/unohee/dev/tools/pykis",
-      "heartbeatInterval": 2700000,
-      "linearLabel": "pykis",
+      "name": "another-project",
+      "projectPath": "${PROJECT_PATH_2:-~/Desktop/another-project}",
+      "heartbeatInterval": 1800000,
+      "linearLabel": "another-project",
       "enabled": true,
-      "paused": false
-    },
-    {
-      "name": "pykiwoom",
-      "projectPath": "/home/unohee/dev/tools/pykiwoom",
-      "heartbeatInterval": 2700000,
-      "linearLabel": "pykiwoom",
-      "enabled": true,
-      "paused": false
+      "paused": true
     }
-  ]
+  ],
+  "defaultHeartbeatInterval": 1800000,
+  "autonomous": {
+    "enabled": true,
+    "pairMode": true,
+    "schedule": "*/15 * * * *",
+    "maxAttempts": 3,
+    "maxConcurrentTasks": 4,
+    "allowedProjects": [
+      "${PROJECT_PATH:-~/Desktop/OpenSwarm}"
+    ],
+    "decomposition": {
+      "enabled": true,
+      "thresholdMinutes": 30,
+      "plannerModel": "claude-opus-4-6-20250627"
+    },
+    "defaultRoles": {
+      "worker": {
+        "enabled": true,
+        "adapter": "codex",
+        "model": "gpt-5.4",
+        "escalateModel": "gpt-5.4",
+        "escalateAfterIteration": 3,
+        "timeoutMs": 1800000
+      },
+      "reviewer": {
+        "enabled": true,
+        "adapter": "claude",
+        "model": "claude-opus-4-6-20250627",
+        "timeoutMs": 600000
+      },
+      "tester": {
+        "enabled": false,
+        "adapter": "codex",
+        "model": "gpt-5.4",
+        "timeoutMs": 600000
+      },
+      "documenter": {
+        "enabled": false,
+        "adapter": "claude",
+        "model": "claude-sonnet-4-6-20250627",
+        "timeoutMs": 300000
+      },
+      "auditor": {
+        "enabled": false,
+        "adapter": "claude",
+        "model": "claude-sonnet-4-6-20250627",
+        "timeoutMs": 300000
+      },
+      "skill-documenter": {
+        "enabled": false,
+        "model": "claude-haiku-4-5-20251001",
+        "timeoutMs": 120000
+      }
+    }
+  },
+  "prProcessor": {
+    "enabled": true,
+    "schedule": "*/15 * * * *",
+    "cooldownHours": 6,
+    "maxIterations": 3
+  }
 }

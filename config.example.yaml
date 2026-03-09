@@ -2,10 +2,16 @@
 # Environment variables can be used in ${VAR_NAME} or ${VAR_NAME:-default} format
 # Copy this file to config.yaml to use
 
+language: ko
+
+# Time window - disable market hours block
+timeWindow:
+  enabled: false
+
 discord:
   token: ${DISCORD_TOKEN}
   channelId: ${DISCORD_CHANNEL_ID}
-  webhookUrl: ${DISCORD_WEBHOOK_URL:-}  # Optional
+  webhookUrl: ${DISCORD_WEBHOOK_URL:-} # Optional
 
 linear:
   apiKey: ${LINEAR_API_KEY}
@@ -13,62 +19,91 @@ linear:
 
 github:
   repos:
-    - unohee/OpenSwarm  # owner/repo format
-  checkInterval: 300000  # 5 minutes (ms)
+    - your-org/OpenSwarm # owner/repo format
+  checkInterval: 300000 # 5 minutes (ms)
+
+# Project discovery settings (used by !dev, chat context, etc.)
+# In Docker: PROJECT_BASE=~/dev, locally: PROJECT_BASE=~/Desktop
+projects:
+  # Base paths to scan for git repositories
+  basePaths:
+    - ${PROJECT_BASE:-~/Desktop}
+  # Known repository aliases (alias: path)
+  knownRepos:
+    OpenSwarm: ${PROJECT_BASE:-~/Desktop}/OpenSwarm
+    another-project: ${PROJECT_BASE:-~/Desktop}/another-project
+  # Linear issue prefix → project name mapping
+  issuePrefixMap:
+    INT: OpenSwarm
 
 # Agent list
 agents:
   - name: main
-    projectPath: ~/dev/OpenSwarm
-    heartbeatInterval: 1800000  # 30 minutes (ms)
-    linearLabel: main  # Label for Linear issue filtering
+    projectPath: ${PROJECT_PATH:-~/Desktop/OpenSwarm}
+    heartbeatInterval: 1800000 # 30 minutes (ms)
+    linearLabel: main # Label for Linear issue filtering
     enabled: true
     paused: false
+  - name: another-project
+    projectPath: ${PROJECT_PATH_2:-~/Desktop/another-project}
+    heartbeatInterval: 1800000
+    linearLabel: another-project
+    enabled: true
+    paused: true
 
 # Default heartbeat interval (ms)
-defaultHeartbeatInterval: 1800000  # 30 minutes
+defaultHeartbeatInterval: 1800000 # 30 minutes
 
 # Autonomous execution mode settings
 autonomous:
   enabled: true
   pairMode: true
-  schedule: "*/15 * * * *"  # Every 15 minutes
+  schedule: "*/15 * * * *" # Every 15 minutes
   maxAttempts: 3
-  maxConcurrentTasks: 4  # Number of concurrent tasks
+  maxConcurrentTasks: 4 # Number of concurrent tasks
 
   allowedProjects:
-    - ~/dev/OpenSwarm
+    - ${PROJECT_PATH:-~/Desktop/OpenSwarm}
 
   # Task decomposition settings (Planner Agent)
   decomposition:
-    enabled: true                    # Enable decomposition
-    thresholdMinutes: 30             # Decompose if estimated time exceeds this
-    plannerModel: claude-sonnet-4-20250514  # Planner model
+    enabled: true # Enable decomposition
+    thresholdMinutes: 30 # Decompose if estimated time exceeds this
+    plannerModel: claude-opus-4-6-20250627 # Planner model
 
   # Per-role settings
   defaultRoles:
     worker:
       enabled: true
-      model: claude-haiku-4-5-20251001        # Default: Haiku (low cost)
-      escalateModel: claude-sonnet-4-20250514  # On failure: Sonnet
-      escalateAfterIteration: 3                # Escalate from 3rd iteration
-      timeoutMs: 1800000  # 30 minutes
+      adapter: codex # Worker CLI
+      model: gpt-5.4
+      escalateModel: gpt-5.4
+      escalateAfterIteration: 3
+      timeoutMs: 1800000 # 30 minutes
     reviewer:
       enabled: true
-      model: claude-haiku-4-5-20251001
-      timeoutMs: 600000   # 10 minutes
+      adapter: claude # Review CLI
+      model: claude-opus-4-6-20250627
+      timeoutMs: 600000 # 10 minutes
     tester:
       enabled: false
+      adapter: codex
+      model: gpt-5.4
+      timeoutMs: 600000
     documenter:
       enabled: false
+      adapter: claude
+      model: claude-sonnet-4-6-20250627
+      timeoutMs: 300000
     auditor:
       enabled: false
-      model: claude-haiku-4-5-20251001
-      timeoutMs: 300000   # 5 minutes
+      adapter: claude
+      model: claude-sonnet-4-6-20250627
+      timeoutMs: 300000 # 5 minutes
     skill-documenter:
       enabled: false
       model: claude-haiku-4-5-20251001
-      timeoutMs: 120000   # 2 minutes
+      timeoutMs: 120000 # 2 minutes
 
 # Long-running task monitoring (RunPod training, batch processing, etc.)
 # monitors:
@@ -80,13 +115,13 @@ autonomous:
 #       type: output-regex
 #       successPattern: "Training finished"
 #       failurePattern: "Error|FAILED"
-#     checkInterval: 2         # Every 2 heartbeats
+#     checkInterval: 2 # Every 2 heartbeats
 #     maxDurationHours: 24
 #     notify: true
 
 # PR Auto-Improvement
 prProcessor:
   enabled: true
-  schedule: "*/15 * * * *"    # Check every 15 minutes
-  cooldownHours: 6            # Wait 6 hours after processing
-  maxIterations: 3            # Max 3 Worker-Reviewer iterations
+  schedule: "*/15 * * * *" # Check every 15 minutes
+  cooldownHours: 6 # Wait 6 hours after processing
+  maxIterations: 3 # Max 3 Worker-Reviewer iterations
