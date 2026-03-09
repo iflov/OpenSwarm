@@ -99,6 +99,8 @@ const RoleConfigSchema = z.object({
   escalateModel: z.string().optional(),
   /** Escalate after this iteration number (default: 3) */
   escalateAfterIteration: z.number().min(1).optional(),
+  /** CLI adapter to use (default: 'claude') */
+  adapter: z.string().default('claude'),
 });
 
 /** Default roles configuration schema */
@@ -109,11 +111,13 @@ const DefaultRolesConfigSchema = z.object({
     timeoutMs: 0,
     escalateModel: 'claude-sonnet-4-5-20250929',
     escalateAfterIteration: 3,
+    adapter: 'claude',
   }),
   reviewer: RoleConfigSchema.default({
     enabled: true,
     model: 'claude-haiku-4-5-20251001',
     timeoutMs: 0,
+    adapter: 'claude',
   }),
   tester: RoleConfigSchema.optional(),
   documenter: RoleConfigSchema.optional(),

@@ -327,6 +327,7 @@ export class PairPipeline extends EventEmitter {
                   : undefined),
             timeoutMs: this.config.roles?.worker?.timeoutMs ?? 0,
             model: overrides?.model ?? this.config.roles?.worker?.model,
+            adapter: this.config.roles?.worker?.adapter,
             issueIdentifier: context.task.issueIdentifier || context.task.issueId,
             projectName: context.task.linearProject?.name,
             onLog,
@@ -366,6 +367,7 @@ export class PairPipeline extends EventEmitter {
             projectPath: context.projectPath,
             timeoutMs: this.config.roles?.reviewer?.timeoutMs ?? 0,
             model: this.config.roles?.reviewer?.model,
+            adapter: this.config.roles?.reviewer?.adapter,
             processContext: { taskId: context.task.id, stage: 'reviewer' },
           });
 

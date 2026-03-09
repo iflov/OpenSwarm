@@ -30,6 +30,7 @@ export interface ReviewerOptions {
   projectPath: string;
   timeoutMs?: number;
   model?: string;              // Claude model (default: claude-sonnet-4-5-20250929)
+  adapter?: string;            // CLI adapter (default: 'claude', also: 'codex')
   processContext?: ProcessContext;
 }
 
@@ -130,7 +131,7 @@ ${options.workerResult.output.slice(0, 2000)}${options.workerResult.output.lengt
 export async function runPreCheck(options: ReviewerOptions): Promise<PreCheckResult> {
   const prompt = buildPreCheckPrompt(options);
   const cwd = expandPath(options.projectPath);
-  const adapter = getAdapter();
+  const adapter = getAdapter(options.adapter);
 
   try {
     // Use Haiku for fast validation
@@ -202,7 +203,7 @@ export async function runPreCheck(options: ReviewerOptions): Promise<PreCheckRes
 export async function runReviewer(options: ReviewerOptions): Promise<ReviewResult> {
   const prompt = buildReviewerPrompt(options);
   const cwd = expandPath(options.projectPath);
-  const adapter = getAdapter();
+  const adapter = getAdapter(options.adapter);
 
   try {
     // Run CLI via adapter

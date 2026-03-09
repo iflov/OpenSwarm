@@ -15,6 +15,7 @@ export type {
 
 export { spawnCli } from './base.js';
 export { ClaudeCliAdapter } from './claude.js';
+export { CodexCliAdapter } from './codex.js';
 export { registerProcess, getProcess, getAllProcesses, killProcess, startHealthChecker, stopHealthChecker } from './processRegistry.js';
 
 // CryptoQuant adapter exports
@@ -22,10 +23,12 @@ export type { USDCNetflowData, RiskOnSignal, CryptoQuantConfig } from './cryptoQ
 export { CryptoQuantAdapter, initCryptoQuantAdapter, getCryptoQuantAdapter } from './cryptoQuantAdapter.js';
 
 import { ClaudeCliAdapter } from './claude.js';
+import { CodexCliAdapter } from './codex.js';
 import type { CliAdapter } from './types.js';
 
 const adapters: Record<string, CliAdapter> = {
   claude: new ClaudeCliAdapter(),
+  codex: new CodexCliAdapter(),
 };
 
 /**

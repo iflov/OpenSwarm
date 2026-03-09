@@ -261,6 +261,8 @@ export type RoleConfig = {
   escalateModel?: string;
   /** Escalate after this iteration number (default: 3) */
   escalateAfterIteration?: number;
+  /** CLI adapter to use (default: 'claude') */
+  adapter?: string;
 };
 
 /**
