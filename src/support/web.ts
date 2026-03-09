@@ -471,7 +471,7 @@ export async function startWebServer(port: number = 3847): Promise<void> {
         const response = await new Promise<string>((resolve) => {
           const proc = spawn(
             'claude',
-            ['--output-format', 'stream-json', '-p', contextPrompt],
+            ['--output-format', 'stream-json', '--verbose', '-p', contextPrompt],
             { shell: false, cwd: process.cwd(), env: process.env, stdio: ['ignore', 'pipe', 'pipe'] }
           );
           let out = '';

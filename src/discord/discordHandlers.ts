@@ -869,7 +869,7 @@ export async function handleAuto(msg: Message, args: string[]): Promise<void> {
       console.log(`[Auto] Starting with pairMode: ${hasPairFlag}`);
       await autonomous.startAutonomous({
         linearTeamId: process.env.LINEAR_TEAM_ID || '',
-        allowedProjects: ['~/dev/OpenSwarm', '~/dev/tools/pykis', '~/dev'],
+        allowedProjects: autonomous.getRunner().getAllowedProjects(),
         heartbeatSchedule: schedule,
         autoExecute: true, // Auto-execute (no approval needed)
         maxConsecutiveTasks: 3,

@@ -50,3 +50,7 @@ state.json
 
 # Subprojects
 openclaw/
+
+# Claude
+.claude
+.omc

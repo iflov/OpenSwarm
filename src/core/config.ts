@@ -239,6 +239,16 @@ const CIWorkerConfigSchema = z.object({
   maxAgeDays: z.number().positive().default(30),
 }).optional();
 
+/** Project discovery configuration schema */
+const ProjectsConfigSchema = z.object({
+  /** Base paths to scan for git repositories */
+  basePaths: z.array(z.string()).default([]),
+  /** Known repository aliases (alias → path) */
+  knownRepos: z.record(z.string(), z.string()).default({}),
+  /** Linear issue prefix → project name mapping */
+  issuePrefixMap: z.record(z.string(), z.string()).default({}),
+}).optional();
+
 const RawConfigSchema = z.object({
   language: z.enum(['en', 'ko']).default('en'),
   discord: DiscordConfigSchema,
@@ -252,6 +262,7 @@ const RawConfigSchema = z.object({
   monitors: z.array(LongRunningMonitorConfigSchema).optional(),
   agents: z.array(AgentSessionSchema).min(1, 'At least one agent is required'),
   defaultHeartbeatInterval: z.number().positive().default(DEFAULT_HEARTBEAT_INTERVAL),
+  projects: ProjectsConfigSchema,
 });
 
 export type RawConfig = z.infer<typeof RawConfigSchema>;
@@ -423,6 +434,13 @@ function transformConfig(raw: RawConfig): SwarmConfig {
       maxAgeDays: raw.ciWorker.maxAgeDays,
     } : undefined,
     monitors: raw.monitors as LongRunningMonitorConfig[] | undefined,
+    projects: raw.projects ? {
+      basePaths: raw.projects.basePaths.map(expandPath),
+      knownRepos: Object.fromEntries(
+        Object.entries(raw.projects.knownRepos).map(([k, v]) => [k, expandPath(v)])
+      ),
+      issuePrefixMap: raw.projects.issuePrefixMap,
+    } : { basePaths: [], knownRepos: {}, issuePrefixMap: {} },
   };
 }
 

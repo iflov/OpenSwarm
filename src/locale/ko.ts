@@ -106,9 +106,9 @@ export const ko: LocaleMessages = {
       checking: '🔍 GitHub 알림 확인 중...',
     },
     dev: {
-      usage: '**사용법:** `!dev <repo> "<task>"`\n**예시:** `!dev pykis "get_balance API 파라미터 확인해줘"`\n\n`!dev list` - 알려진 저장소 목록\n`!dev scan` - ~/dev 폴더 스캔',
-      noRepos: '~/dev에서 Git 저장소를 찾을 수 없습니다.',
-      repoList: '**~/dev 저장소 목록:**',
+      usage: '**사용법:** `!dev <repo> "<task>"`\n**예시:** `!dev my-project "버그 수정해줘"`\n\n`!dev list` - 알려진 저장소 목록\n`!dev scan` - 설정된 경로 스캔',
+      noRepos: '설정된 경로에서 Git 저장소를 찾을 수 없습니다.',
+      repoList: '**저장소 목록:**',
       taskStarting: '🚀 **{{repo}}**에서 작업 시작...\n📁 `{{path}}`\n📝 `{{task}}`',
       inProgress: '**[{{repo}}] 진행 중...**',
       completed: '**[{{repo}}] 완료** (exit: {{exitCode}})',
@@ -121,7 +121,7 @@ export const ko: LocaleMessages = {
       available: '✅ 사용 가능',
       unavailable: '❌ 경로 없음',
       tip: '💡 팁',
-      tipContent: '`!dev scan`으로 ~/dev 폴더 전체 스캔\n상대경로도 가능: `!dev tools/pykis "..."`',
+      tipContent: '`!dev scan`으로 설정된 경로 전체 스캔\n상대경로도 가능: `!dev my-project "..."`',
     },
     tasks: {
       noTasks: '실행 중인 dev 작업이 없습니다.',
@@ -149,7 +149,7 @@ export const ko: LocaleMessages = {
       notFound: '❌ 스케줄을 찾을 수 없습니다: `{{name}}`',
       toggleEnabled: '🟢 활성화: **{{name}}**',
       toggleDisabled: '⏸️ 비활성화: **{{name}}**',
-      addUsage: '**사용법:**\n`!schedule add <name> <project_path> <interval> "<prompt>"`\n\n**예시:**\n`!schedule add myproject-check ~/dev/myproject 30m "테스트 실행하고 결과 보고해줘"`\n\n**interval:** `30m`, `1h`, `2h`, `1d` 또는 cron 표현식',
+      addUsage: '**사용법:**\n`!schedule add <name> <project_path> <interval> "<prompt>"`\n\n**예시:**\n`!schedule add myproject-check ~/Desktop/myproject 30m "테스트 실행하고 결과 보고해줘"`\n\n**interval:** `30m`, `1h`, `2h`, `1d` 또는 cron 표현식',
       addSuccess: '✅ 스케줄 추가됨: **{{name}}** ({{schedule}})',
       addFailed: '❌ 스케줄 추가 실패: {{error}}',
       removeUsage: '사용법: `!schedule remove <name>`',
@@ -246,7 +246,7 @@ export const ko: LocaleMessages = {
 **Dev 작업** (Claude 디스패치)
 \`!dev <repo> "<task>"\` - 저장소에서 dev 작업 실행
 \`!dev list\` - 알려진 저장소 목록
-\`!dev scan\` - ~/dev 폴더 스캔
+\`!dev scan\` - 설정된 경로 스캔
 \`!repos\` - 저장소 목록 (상세)
 \`!tasks\` - 실행 중인 작업 목록
 \`!cancel <taskId>\` - 작업 취소

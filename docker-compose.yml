@@ -16,6 +16,7 @@ services:
       - TZ=Asia/Seoul
       - HOME=/home/claude
       - PROJECT_PATH=/app
+      - PROJECT_BASE=~/dev
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
 
     # Load environment from file

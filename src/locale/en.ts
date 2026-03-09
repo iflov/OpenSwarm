@@ -106,9 +106,9 @@ export const en: LocaleMessages = {
       checking: 'Checking GitHub notifications...',
     },
     dev: {
-      usage: '**Usage:** `!dev <repo> "<task>"`\n**Example:** `!dev pykis "check get_balance API parameters"`\n\n`!dev list` - Show known repositories\n`!dev scan` - Scan ~/dev folder',
-      noRepos: 'No Git repositories found in ~/dev.',
-      repoList: '**~/dev repository list:**',
+      usage: '**Usage:** `!dev <repo> "<task>"`\n**Example:** `!dev my-project "fix the login bug"`\n\n`!dev list` - Show known repositories\n`!dev scan` - Scan configured paths',
+      noRepos: 'No Git repositories found in configured paths.',
+      repoList: '**Repository list:**',
       taskStarting: 'Starting work on **{{repo}}**...\n`{{path}}`\n`{{task}}`',
       inProgress: '**[{{repo}}] In progress...**',
       completed: '**[{{repo}}] Completed** (exit: {{exitCode}})',
@@ -121,7 +121,7 @@ export const en: LocaleMessages = {
       available: 'Available',
       unavailable: 'Path not found',
       tip: 'Tip',
-      tipContent: 'Use `!dev scan` to scan entire ~/dev folder\nRelative paths also work: `!dev tools/pykis "..."`',
+      tipContent: 'Use `!dev scan` to scan configured paths\nRelative paths also work: `!dev my-project "..."`',
     },
     tasks: {
       noTasks: 'No running dev tasks.',
@@ -149,7 +149,7 @@ export const en: LocaleMessages = {
       notFound: 'Schedule not found: `{{name}}`',
       toggleEnabled: 'Enabled: **{{name}}**',
       toggleDisabled: 'Disabled: **{{name}}**',
-      addUsage: '**Usage:**\n`!schedule add <name> <project_path> <interval> "<prompt>"`\n\n**Example:**\n`!schedule add myproject-check ~/dev/myproject 30m "run tests and report results"`\n\n**interval:** `30m`, `1h`, `2h`, `1d` or cron expression',
+      addUsage: '**Usage:**\n`!schedule add <name> <project_path> <interval> "<prompt>"`\n\n**Example:**\n`!schedule add myproject-check ~/Desktop/myproject 30m "run tests and report results"`\n\n**interval:** `30m`, `1h`, `2h`, `1d` or cron expression',
       addSuccess: 'Schedule added: **{{name}}** ({{schedule}})',
       addFailed: 'Schedule add failed: {{error}}',
       removeUsage: 'Usage: `!schedule remove <name>`',
@@ -246,7 +246,7 @@ export const en: LocaleMessages = {
 **Dev Tasks** (dispatch Claude)
 \`!dev <repo> "<task>"\` - Run dev task on repository
 \`!dev list\` - Known repository list
-\`!dev scan\` - Scan ~/dev folder
+\`!dev scan\` - Scan configured paths
 \`!repos\` - Repository list (detailed)
 \`!tasks\` - Running task list
 \`!cancel <taskId>\` - Cancel task

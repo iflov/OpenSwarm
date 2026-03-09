@@ -48,7 +48,7 @@ export class ClaudeCliAdapter implements CliAdapter {
     // options.prompt is the temp file path (set by spawnCli)
     const promptFile = options.prompt;
     const modelFlag = options.model ? ` --model ${options.model}` : '';
-    const cmd = `echo "" | claude -p "$(cat ${promptFile})" --output-format stream-json --permission-mode bypassPermissions${modelFlag}`;
+    const cmd = `echo "" | claude -p "$(cat ${promptFile})" --output-format stream-json --verbose --permission-mode bypassPermissions${modelFlag}`;
     return { command: cmd, args: [] };
   }
 

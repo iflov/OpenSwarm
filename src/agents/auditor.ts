@@ -132,7 +132,7 @@ async function runClaudeCli(
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const modelFlag = model ? ` --model ${model}` : '';
-    const cmd = `echo "" | claude -p "$(cat ${promptFile})" --output-format stream-json --permission-mode bypassPermissions${modelFlag}`;
+    const cmd = `echo "" | claude -p "$(cat ${promptFile})" --output-format stream-json --verbose --permission-mode bypassPermissions${modelFlag}`;
 
     const proc = spawn(cmd, {
       shell: true,

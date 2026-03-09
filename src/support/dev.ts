@@ -11,18 +11,9 @@ import { extractCostFromStreamJson, formatCost } from './costTracker.js';
 
 /**
  * Known repository list (alias -> path)
+ * Populated from config.yaml projects.knownRepos at startup
  */
-const KNOWN_REPOS: Record<string, string> = {
-  // Tools
-  pykis: '~/dev/tools/pykis',
-  pykiwoom: '~/dev/tools/pykiwoom',
-  'pykiwoom-rest': '~/dev/tools/pykiwoom-rest',
-
-  // Projects - add as needed
-  'OpenSwarm': '~/dev/OpenSwarm',
-  stonks: '~/dev/STONKS',
-  stockapi: '~/dev/StockAPI',
-};
+const KNOWN_REPOS: Record<string, string> = {};
 
 /**
  * Active dev task tracking
@@ -68,10 +59,12 @@ export function resolveRepoPath(repo: string): string | null {
     return existsSync(path) ? path : null;
   }
 
-  // 3. Relative path (assumed under ~/dev/)
-  const devPath = expandPath(`~/dev/${repo}`);
-  if (existsSync(devPath)) {
-    return devPath;
+  // 3. Relative path (search in configured base paths)
+  for (const basePath of scanBasePaths) {
+    const fullPath = expandPath(`${basePath}/${repo}`);
+    if (existsSync(fullPath)) {
+      return fullPath;
+    }
   }
 
   return null;
@@ -88,17 +81,34 @@ export function listKnownRepos(): { alias: string; path: string; exists: boolean
   }));
 }
 
+/** Base paths for scanning (populated from config) */
+let scanBasePaths: string[] = [];
+
 /**
- * Scan repositories in ~/dev folder
+ * Initialize dev module with config
+ */
+export function initDevConfig(config: { basePaths: string[]; knownRepos: Record<string, string> }): void {
+  scanBasePaths = config.basePaths;
+  // Merge knownRepos from config
+  for (const [alias, path] of Object.entries(config.knownRepos)) {
+    KNOWN_REPOS[alias.toLowerCase()] = path;
+  }
+}
+
+/**
+ * Scan repositories in configured base paths
  */
 export function scanDevRepos(): string[] {
-  const devDir = expandPath('~/dev');
-  if (!existsSync(devDir)) return [];
+  const repos: string[] = [];
+  const paths = scanBasePaths.length > 0 ? scanBasePaths : [];
 
-  try {
-    return readdirSync(devDir)
-      .filter((name) => {
-        const fullPath = resolve(devDir, name);
+  for (const basePath of paths) {
+    const dir = expandPath(basePath);
+    if (!existsSync(dir)) continue;
+
+    try {
+      const entries = readdirSync(dir).filter((name) => {
+        const fullPath = resolve(dir, name);
         try {
           return statSync(fullPath).isDirectory() &&
                  existsSync(resolve(fullPath, '.git'));
@@ -106,9 +116,13 @@ export function scanDevRepos(): string[] {
           return false;
         }
       });
-  } catch {
-    return [];
+      repos.push(...entries);
+    } catch {
+      // skip inaccessible paths
+    }
   }
+
+  return [...new Set(repos)];
 }
 
 /**
@@ -151,6 +165,7 @@ export async function runDevTask(
   const claudeProcess = spawn('claude', [
     '-p', task,
     '--output-format', 'stream-json',
+    '--verbose',
     '--permission-mode', 'bypassPermissions'
   ], {
     cwd: path,

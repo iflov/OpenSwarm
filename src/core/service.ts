@@ -9,6 +9,7 @@ import type {
 } from './types.js';
 import * as linear from '../linear/index.js';
 import * as discord from '../discord/index.js';
+import * as dev from '../support/dev.js';
 import * as github from '../github/index.js';
 import * as scheduler from '../automation/scheduler.js';
 import * as web from '../support/web.js';
@@ -65,6 +66,10 @@ export async function startService(config: SwarmConfig): Promise<void> {
   console.log('🤖 Connecting Discord bot...');
   await discord.initDiscord(config.discordToken, config.discordChannelId);
   console.log('✅ Discord bot connected successfully');
+
+  // Initialize project discovery config
+  discord.setProjectsConfig(config.projects);
+  dev.initDevConfig(config.projects);
 
   // Start web interface
   console.log('🌐 Starting web interface...');

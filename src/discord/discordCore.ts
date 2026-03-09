@@ -146,29 +146,33 @@ export function buildHistoryContext(channelId: string, currentMessage: string): 
 // ============================================
 
 import * as projectMapper from '../support/projectMapper.js';
+import type { ProjectsConfig } from '../core/types.js';
 
-// Default project scan paths
-const PROJECT_BASE_PATHS = ['~/dev', '~/dev/tools', '~/projects'];
+// Project discovery config (populated from config.yaml at startup)
+let projectsConfig: ProjectsConfig = { basePaths: [], knownRepos: {}, issuePrefixMap: {} };
+
+/**
+ * Set project discovery configuration (called from service.ts)
+ */
+export function setProjectsConfig(config: ProjectsConfig): void {
+  projectsConfig = config;
+}
 
 // Project name patterns (Linear issue IDs, project names, etc.)
-const PROJECT_PATTERNS = [
-  // Extract project from Linear issue ID (e.g., INT-123, STONKS-456)
-  /\b([A-Z]{2,10})-\d+\b/g,
-  // Explicit project mentions
-  /\b(STONKS|VELA|PyKIS|pykis|pykiwoom|HIVE|OpenSwarm)\b/gi,
-  // "~~ project" pattern (Korean)
-  /(\w+)\s*프로젝트/gi,
-];
-
-// Issue prefix → project name mapping (based on Linear issue IDs)
-const ISSUE_PREFIX_MAP: Record<string, string> = {
-  'INT': 'OpenSwarm',  // HIVE project
-  'STONKS': 'STONKS',
-  'VELA': 'VELA',
-  'PYKIS': 'pykis',
-  'PKW': 'pykiwoom',
-  'SA': 'STONKS',  // STONKS-SaaS
-};
+function getProjectPatterns(): RegExp[] {
+  const knownNames = Object.keys(projectsConfig.knownRepos);
+  const patterns: RegExp[] = [
+    // Extract project from Linear issue ID (e.g., INT-123, STONKS-456)
+    /\b([A-Z]{2,10})-\d+\b/g,
+    // "~~ project" pattern (Korean)
+    /(\w+)\s*프로젝트/gi,
+  ];
+  // Add known repo names as patterns
+  if (knownNames.length > 0) {
+    patterns.push(new RegExp(`\\b(${knownNames.join('|')})\\b`, 'gi'));
+  }
+  return patterns;
+}
 
 /**
  * Extract project hints from message
@@ -176,7 +180,7 @@ const ISSUE_PREFIX_MAP: Record<string, string> = {
 export function extractProjectHints(message: string): string[] {
   const hints: Set<string> = new Set();
 
-  for (const pattern of PROJECT_PATTERNS) {
+  for (const pattern of getProjectPatterns()) {
     const matches = message.matchAll(pattern);
     for (const match of matches) {
       const hint = match[1] || match[0];
@@ -193,12 +197,12 @@ export function extractProjectHints(message: string): string[] {
 export async function resolveProjectPath(hints: string[]): Promise<string | null> {
   if (hints.length === 0) return null;
 
-  // Scan local projects
-  const localProjects = await projectMapper.scanLocalProjects(PROJECT_BASE_PATHS);
+  // Scan local projects using configured base paths
+  const localProjects = await projectMapper.scanLocalProjects(projectsConfig.basePaths);
 
   for (const hint of hints) {
-    // 1. Check issue prefix mapping
-    const mappedName = ISSUE_PREFIX_MAP[hint];
+    // 1. Check issue prefix mapping from config
+    const mappedName = projectsConfig.issuePrefixMap[hint];
     if (mappedName) {
       const match = projectMapper.findBestMatch(mappedName, localProjects);
       if (match && match.confidence >= 0.7) {

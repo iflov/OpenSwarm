@@ -125,6 +125,20 @@ export type SwarmConfig = {
   monitors?: LongRunningMonitorConfig[];
   /** Daily status report scheduler config */
   dailyReporter?: DailyReporterConfig;
+  /** Project discovery settings (used by !dev, chat context, etc.) */
+  projects: ProjectsConfig;
+};
+
+/**
+ * Project discovery configuration
+ */
+export type ProjectsConfig = {
+  /** Base paths to scan for git repositories */
+  basePaths: string[];
+  /** Known repository aliases (alias → path) */
+  knownRepos: Record<string, string>;
+  /** Linear issue prefix → project name mapping */
+  issuePrefixMap: Record<string, string>;
 };
 
 /**
