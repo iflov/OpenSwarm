@@ -58,3 +58,5 @@ openclaw/
 
 # Codex
 .omx
+.codex
+.agents
